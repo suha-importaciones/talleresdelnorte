@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Panel del taller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+.adm{padding-block:32px 80px}
+.adm-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
+.adm-h h1{font-size:clamp(2rem,5vw,2.8rem)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:12px 16px;font-weight:700;color:var(--mute);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--red2)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px}
+.kpi span{font:700 .68rem var(--f-m);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.kpi b{display:block;font-family:var(--f-d);font-size:2.2rem;line-height:1.1}
+.reqs{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px;align-items:start}
+@media (max-width:900px){.reqs{grid-template-columns:1fr}}
+.rlist{display:flex;flex-direction:column;gap:8px}
+.ritem{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:4px 12px;text-align:left;width:100%}
+.ritem.cur{border-color:var(--red2)}
+.ritem b{font-size:.98rem}
+.ritem small{color:var(--mute);font-size:.82rem;grid-column:1}
+.st{font:700 .66rem var(--f-m);letter-spacing:.08em;padding:4px 8px;border-radius:2px;align-self:start;white-space:nowrap}
+.st.Nueva{background:rgba(255,64,52,.16);color:#ff8079}.st.Contactado{background:rgba(232,165,31,.14);color:var(--warn)}.st.Presupuestado{background:rgba(120,160,255,.14);color:#9ab6ff}.st.Cita{background:rgba(60,193,115,.14);color:var(--ok)}.st.Cerrada{background:var(--panel2);color:var(--dim)}
+.urg{color:#ff8079;font-weight:700}
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
+.cfgtbl{width:100%;border-collapse:collapse;font-size:.9rem}
+.cfgtbl th{text-align:left;font:700 .66rem var(--f-m);letter-spacing:.12em;color:var(--dim);text-transform:uppercase;padding:0 6px 8px 0}
+.cfgtbl td{padding:4px 6px 4px 0}
+.cfgtbl input{padding:8px 9px;font-size:.88rem}
+.cfgtbl td:first-child{white-space:nowrap;font-weight:700;padding-right:12px}
+.empty{color:var(--mute);background:var(--panel);border:1px dashed var(--line2);border-radius:6px;padding:28px;text-align:center}
+.gate{max-width:380px;margin:12vh auto;display:flex;flex-direction:column;gap:16px}
+.svcrow{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:center}
+@media (max-width:640px){.svcrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="demo-bar"><div class="wrap"><b>Panel en modo demostración.</b><span>Muestra las solicitudes guardadas en este navegador y los cambios solo se aplican aquí. Ver README para activarlo de verdad.</span></div></div>
+
+<div class="wrap">
+  <form class="gate" id="gate">
+    <div class="brand"><img src="assets/img/logo.png" alt="" width="52" height="52" style="border-radius:50%"><span class="wm"><b>PANEL DEL <span>TALLER</span></b><small>TALLERES DEL NORTE</small></span></div>
+    <div class="field"><label for="pin">PIN de acceso</label><input id="pin" type="password" inputmode="numeric" autocomplete="current-password"></div>
+    <p class="err" id="gErr"></p>
+    <button class="btn" type="submit">Entrar</button>
+    <small style="color:var(--dim)">PIN de la demo: el que figura en config.js. No es una protección real: ver README.</small>
+  </form>
+
+  <div class="adm" id="app" hidden>
+    <div class="adm-h"><h1>Panel del taller</h1><div class="acts"><a class="btn line sm" href="index.html">Ver la web</a><button class="btn line sm" id="logout" type="button">Salir</button></div></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-t="sol" aria-selected="true">Solicitudes</button>
+      <button type="button" role="tab" data-t="pre" aria-selected="false">Precios orientativos</button>
+      <button type="button" role="tab" data-t="ser" aria-selected="false">Servicios</button>
+      <button type="button" role="tab" data-t="dat" aria-selected="false">Horario y contacto</button>
+      <button type="button" role="tab" data-t="exp" aria-selected="false">Publicar cambios</button>
+    </div>
+
+    <div data-p="sol">
+      <div class="kpis" id="kpis"></div>
+      <div class="field" style="max-width:260px;margin-bottom:14px"><label for="fEst">Filtrar por estado</label><select id="fEst"><option value="">Todas</option></select></div>
+      <div class="reqs"><div class="rlist" id="rlist"></div><div id="detail"></div></div>
+    </div>
+
+    <div data-p="pre" hidden>
+      <div class="stack" style="max-width:900px">
+        <label class="chk"><input type="checkbox" id="pAct"><span>Mostrar estimaciones con importes en la web</span></label>
+        <label class="chk"><input type="checkbox" id="pDemo"><span>Avisar de que los precios son de demostración</span></label>
+        <div class="row"><div class="field"><label for="pTar">Tarifa mano de obra (€/h sin IVA)</label><input id="pTar" type="number" step="0.5"></div><div class="field"><label for="pIva">IVA (%)</label><input id="pIva" type="number" step="1"></div></div>
+        <div class="tblwrap"><table class="cfgtbl" id="pTbl"></table></div>
+        <small style="color:var(--dim)">Deja la referencia vacía para que esa zona muestre “El taller revisará tu solicitud y te enviará un presupuesto”. Piezas en € sin IVA para un compacto; la web aplica el multiplicador del tipo de vehículo.</small>
+        <div><button class="btn" type="button" id="pSave">Guardar precios</button> <span id="pOk" style="color:var(--ok);margin-left:10px"></span></div>
+      </div>
+    </div>
+
+    <div data-p="ser" hidden>
+      <div class="stack" style="max-width:900px"><div class="stack" id="sList"></div>
+        <div class="acts"><button class="btn line" type="button" id="sAdd">Añadir servicio</button><button class="btn" type="button" id="sSave">Guardar servicios</button><span id="sOk" style="color:var(--ok);align-self:center"></span></div></div>
+    </div>
+
+    <div data-p="dat" hidden>
+      <div class="stack" style="max-width:900px">
+        <div class="row">
+          <div class="field"><label for="dTel">Teléfono (visible)</label><input id="dTel"></div>
+          <div class="field"><label for="dTelI">Teléfono internacional</label><input id="dTelI"></div>
+          <div class="field"><label for="dWa">WhatsApp (solo dígitos con 34)</label><input id="dWa" placeholder="34600111222"></div>
+          <div class="field"><label for="dMail">Correo</label><input id="dMail" type="email"></div>
+        </div>
+        <div class="row"><div class="field"><label for="dDir">Dirección</label><input id="dDir"></div><div class="field"><label for="dCp">C.P.</label><input id="dCp"></div><div class="field"><label for="dLoc">Localidad</label><input id="dLoc"></div></div>
+        <span class="lbl">Horario (formato 09:00-13:00, 15:00-19:00 · vacío = cerrado)</span>
+        <div class="row" id="hList"></div>
+        <p class="err" id="dErr"></p>
+        <div><button class="btn" type="button" id="dSave">Guardar</button> <span id="dOk" style="color:var(--ok);margin-left:10px"></span></div>
+      </div>
+    </div>
+
+    <div data-p="exp" hidden>
+      <div class="stack" style="max-width:900px">
+        <p class="lead">Los cambios guardados aquí solo se ven en este navegador. Para publicarlos para todos, copia este contenido y sustituye con él el archivo <code>assets/js/config.js</code> de la web.</p>
+        <textarea id="eOut" style="min-height:360px;font:500 .8rem/1.5 var(--f-m)" readonly></textarea>
+        <div class="acts"><button class="btn" type="button" id="eCopy">Copiar config.js</button><button class="btn line" type="button" id="eReset">Descartar cambios locales</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/integrations.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>
